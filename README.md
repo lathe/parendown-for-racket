@@ -14,7 +14,7 @@ It's as though we get simple compositions of macros and functions for free becau
     d
     e))
 
-becomes
+can now be written
 
 (foo#/bar a b c
   d
@@ -32,7 +32,7 @@ We can add and remove early-exit conditionals and continuation-passing style com
       i
       j)))
 
-becomes
+can now be written
 
 (foo a b
   c
@@ -47,7 +47,9 @@ We can add or remove elements from the middle of a linked-list-like data structu
 
 ```
 (cons a (cons b (cons c nil)))
-becomes
+
+can now be written
+
 (cons a #/cons b #/cons c nil)
 ```
 
