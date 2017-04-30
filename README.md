@@ -46,11 +46,11 @@ can now be written
 We can add or remove elements from the middle of a linked-list-like data structure without needing to adjust the number of parens at the end, and without a tailor-made macro or variadic function for the purpose:
 
 ```
-(cons a (cons b (cons c nil)))
+(cons a (cons b (cons c null)))
 
 can now be written
 
-(cons a #/cons b #/cons c nil)
+(cons a #/cons b #/cons c null)
 ```
 
 ## Usage
