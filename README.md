@@ -59,6 +59,8 @@ Parendown is a language extension for Racket. To use it, `raco pkg install paren
 
 ## Anecdotes
 
-Parendown takes primary inspiration from the Arc language's abbreviation of `(a (b c))` as `(a:b c)`. While Arc restricted this to a single symbol, I think I've heard of similar generalizations of this syntax before I developed mine, particularly appearing in alternative implementations of Arc such as suzuki's Semi-Arc and early versions of dido's Arcueid.
+This isn't the first time I've implemented something like this for Racket. My utility library Lathe exports a syntax `(: a b : c d)` which expands to `(a b (c d))` as well, but having to write `:` at the beginning of the form was rather disappointing.
 
-Once I implemented the sugar `(a b /c d)` for my own languages and struck upon the way it let me avoid indentation for continuation-passing style code, I decided to design a bunch of the Cene language with it in place from the start. It has a surprising impact on a language.
+These syntaxes take primary inspiration from the Arc language's abbreviation of `(a (b c))` as `(a:b c)`. While Arc restricted this to a single symbol, I think I've heard of similar generalizations of this syntax before I developed mine, particularly appearing in alternative implementations of Arc such as suzuki's Semi-Arc and early versions of dido's Arcueid. I've also heard of this in some versions of Pauan's Nulan.
+
+Once I implemented the sugar `(a b /c d)` for my own new languages, I started to change my indentation style, which finally let me avoid indentation for continuation-passing style code. I decided to design a bunch of the Cene language with it in place from the start. Easy continuation-passing style has a surprising impact on a language design.
