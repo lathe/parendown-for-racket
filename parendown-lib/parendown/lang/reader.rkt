@@ -49,13 +49,11 @@
     (body)
     (until-fn condition body)))
 
-(define-syntax (until stx)
-  (syntax-case stx ()
-    [ (_ condition body)
-      #'(until-fn (lambda () condition) (lambda () body))]))
+(define-syntax-rule (until condition body ...)
+  (until-fn (lambda () condition) (lambda () body ...)))
 
 (define (read-list in src line col pos should-read-syntax)
-  (define rev-result (list))
+  (define rev-elems (list))
   (define next-char undefined)
   (until
     (begin
@@ -67,13 +65,13 @@
           "read: expected `)', `]', or `}' to close `#/'"
           src line col pos span))
       (memq next-char (list #\) #\] #\})))
-    (set! rev-result
-      (cons
-        (if should-read-syntax
-          (read-syntax src in)
-          (read in))
-        rev-result)))
-  (define result (reverse rev-result))
+    (define elem
+      (if should-read-syntax
+        (read-syntax/recursive src in)
+        (read/recursive in)))
+    (unless (special-comment? elem)
+      (set! rev-elems (cons elem rev-elems))))
+  (define result (reverse rev-elems))
   (define-values [stop-line stop-col stop-pos]
     (port-next-location in))
   (when should-read-syntax
