@@ -2,10 +2,11 @@
 
 (require
   (for-meta 1 racket/base)
+  (only-in racket/undefined undefined)
   (only-in syntax/module-reader
     make-meta-reader
     lang-reader-module-paths)
-  (only-in racket/undefined undefined))
+  (only-in syntax/readerr raise-read-error))
 
 (provide
   (rename-out
@@ -60,6 +61,11 @@
     (begin
       (regexp-match #px"^\\s*" in)
       (set! next-char (peek-char in))
+      (when (eq? eof next-char)
+        (define span 2)
+        (raise-read-error
+          "read: expected `)', `]', or `}' to close `#/'"
+          src line col pos span))
       (memq next-char (list #\) #\] #\})))
     (set! rev-result
       (cons
