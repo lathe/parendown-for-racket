@@ -57,6 +57,17 @@ can now be written
 
 Parendown is a language extension for Racket. To use it, `raco pkg install parendown`, and then if you usually write something like `#lang racket` at the top of your files, write something like `#lang parendown racket` instead. Since Parendown is sugar for parentheses, it'll come in handy for just about any s-expression-based language.
 
+If you're writing your own reader extensions, you can add Parendown functionality to your readtable like so:
+
+```
+(require (only-in parendown parendown-readtable-handler))
+
+(make-readtable (current-readtable) #\/ 'dispatch-macro
+  parendown-readtable-handler)
+```
+
+This gives you the opportunity to use a syntax other than `#/` if you prefer.
+
 ## Related work
 
 This isn't the first time I've implemented something like this for Racket. My utility library Lathe exports a syntax `(: a b : c d)` which expands to `(a b (c d))`, but having to write `:` at the beginning of the form was rather disappointing.
