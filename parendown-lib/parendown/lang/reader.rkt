@@ -23,7 +23,7 @@
          ; using Racket's many identifiers with / in their names, such
          ; as racket/base.
          (make-readtable (current-readtable) #\/ 'dispatch-macro
-;        (make-readtable (current-readtable) #\/ 'terminating-macro
+;         (make-readtable (current-readtable) #\/ 'terminating-macro
            parendown-readtable-handler)])
       (apply -read args))))
 
