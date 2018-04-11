@@ -1,11 +1,82 @@
 #lang racket/base
 
 (require
+  (for-syntax
+    racket/base
+    (only-in racket/match match)
+    (only-in syntax/parse id syntax-parse))
+  (only-in racket/contract/base case-> -> any any/c or/c)
+  (only-in racket/contract/region define/contract)
   (only-in racket/undefined undefined)
   (only-in syntax/readerr raise-read-error))
 
-(provide parendown-readtable-handler)
+(provide parendown-readtable-handler pd)
 
+
+
+; ===== Weak opening brackets from a syntax transformer ==============
+
+(define-syntax (pd stx)
+  (syntax-parse stx
+    
+    ; If the input appears to have already been processed by a
+    ; surrounding `pd` form, that's fine. In that case `pd` behaves
+    ; like an identity operation, having no effect.
+    [(_ (rest ...)) #'(rest ...)]
+    
+    [ (_ sample:id rest ...)
+      (define (add-to-syntax-property-list prop-name elem stx)
+        (syntax-property stx prop-name
+          (cons elem (or (syntax-property stx prop-name) (list)))))
+      (define uses (list))
+      (define processed
+        (let loop ([stx #'(rest ...)])
+          (syntax-parse stx
+            [ (first . rest)
+              (if
+                (and
+                  (identifier? #'first)
+                  (bound-identifier=? #'sample #'first))
+                (begin
+                  (set! uses (cons #'first uses))
+                  #`(#,(loop #'rest)))
+                #`(#,(loop #'first) . #,(loop #'rest)))]
+            [_ stx])))
+      #`(let ()
+          
+          ; We generate fake binding and usage sites just so the
+          ; Check Syntax binding arrows look good in DrRacket.
+          ;
+          (let ()
+            (define-syntax (sample stx) #'(void))
+            #,@uses
+            (void))
+          
+          ; It's not likely the user will be manage to detect whether
+          ; the binding illustrated by those binding arrows actually
+          ; exists, since we already do a code-walk to replace all the
+          ; usage sites, but just in case, we do supply a binding. The
+          ; binding causes an error to discourage people from relying
+          ; on its behavior, but people can still rely on the fact
+          ; that any previous binding for this identifier is shadowed.
+          ;
+          (define-syntax (sample stx)
+            (raise-syntax-error #f
+              "weak open paren from pd not allowed as an expression"
+              stx))
+          
+          ; And just in case there's a way for the user to run their
+          ; own `(define-syntax (sample ...) ...)` to conflict with
+          ; ours, we put their code in its own internal definition
+          ; context. It's not clear this is really necessary, but at
+          ; least this way it's clear that it's properly isolated.
+          ;
+          (let ()
+            #,processed))]))
+
+
+
+; ===== Weak opening brackets from a reader extension ================
 
 (define (until-fn condition body)
   (unless (condition)
@@ -44,7 +115,17 @@
               (eq? 'a (read (open-input-string symbol-name))))))))))
 
 
-(define parendown-readtable-handler
+(define/contract parendown-readtable-handler
+  (case->
+    (-> char? input-port? any)
+    (->
+      char?
+      input-port?
+      any/c
+      (or/c #f exact-positive-integer?)
+      (or/c #f exact-nonnegative-integer?)
+      (or/c #f exact-positive-integer?)
+      any))
   (case-lambda
     [ (name in)
       (define-values (line col pos) (port-next-location in))

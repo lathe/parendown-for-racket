@@ -53,6 +53,7 @@ can now be written
 (cons a #/cons b #/cons c null)
 ```
 
+
 ## Usage
 
 Parendown is a language extension for Racket. To use it, `raco pkg install parendown`, and then if you usually write something like `#lang racket` at the top of your files, write something like `#lang parendown racket` instead. Since Parendown is sugar for parentheses, it'll come in handy for just about any s-expression-based language.
@@ -68,9 +69,35 @@ If you're writing your own reader extensions, you can add Parendown functionalit
 
 This gives you the opportunity to use a syntax other than `#/` if you prefer.
 
-## Related work
+In certain circumstances, such as Scribble documentation examples, a new reader syntax is not convenient. In this case, you can achieve a similar effect by using Parendown as a library, importing the `pd` macro:
 
-This isn't the first time I've implemented something like this for Racket. My utility library Lathe exports a syntax `(: a b : c d)` which expands to `(a b (c d))`, but having to write `:` at the beginning of the form was rather disappointing.
+```
+(require (only-in parendown pd))
+
+(pd / foo a b
+  c
+/ bar d e
+  f
+/ baz g h
+  i
+  j)
+```
+```
+
+The `pd` form expects its first subform to be a symbol -- here `/` -- and then it traverses deeply over the remaining subforms' s-expression structure processing all occurrences of the same symbol. This means you often only have to use the `pd` macro once per module:
+
+```
+(pd / begin
+
+  ; ... write module here ...
+
+)
+```
+
+The `pd` form also expands calls of the form `(pd (a b c))` simply to `(a b c)`, just so that if you're making nested calls to `pd` with the same symbol, the program continues to work.
+
+
+## Related work
 
 These syntaxes take primary inspiration from the Arc language's abbreviation of `(a (b c))` as `(a:b c)`. Arc restricted this to a single symbol, but I think I've heard of similar generalizations of this syntax before I developed mine, particularly appearing in alternative implementations of Arc such as suzuki's Semi-Arc and early versions of dido's Arcueid. I've also heard of this in some versions of Pauan's Nulan.
 
