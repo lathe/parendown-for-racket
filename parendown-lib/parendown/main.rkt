@@ -42,37 +42,14 @@
                   #`(#,(loop #'rest)))
                 #`(#,(loop #'first) . #,(loop #'rest)))]
             [_ stx])))
-      #`(let ()
-          
+      #`(begin
           ; We generate fake binding and usage sites just so the
           ; Check Syntax binding arrows look good in DrRacket.
-          ;
           (let ()
             (define-syntax (sample stx) #'(void))
             #,@uses
             (void))
-          
-          ; It's not likely the user will be manage to detect whether
-          ; the binding illustrated by those binding arrows actually
-          ; exists, since we already do a code-walk to replace all the
-          ; usage sites, but just in case, we do supply a binding. The
-          ; binding causes an error to discourage people from relying
-          ; on its behavior, but people can still rely on the fact
-          ; that any previous binding for this identifier is shadowed.
-          ;
-          (define-syntax (sample stx)
-            (raise-syntax-error #f
-              "weak open paren from pd not allowed as an expression"
-              stx))
-          
-          ; And just in case there's a way for the user to run their
-          ; own `(define-syntax (sample ...) ...)` to conflict with
-          ; ours, we put their code in its own internal definition
-          ; context. It's not clear this is really necessary, but at
-          ; least this way it's clear that it's properly isolated.
-          ;
-          (let ()
-            #,processed))]))
+          #,processed)]))
 
 
 
