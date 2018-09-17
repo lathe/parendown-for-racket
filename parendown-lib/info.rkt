@@ -1,5 +1,5 @@
 #lang info
 
-(define collection 'multi)
+(define collection "parendown")
 
 (define deps (list "base"))
