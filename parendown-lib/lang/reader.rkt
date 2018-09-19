@@ -47,9 +47,9 @@
            parendown-readtable-handler)])
       (apply -read args))))
 
-(define-values [-read -read-syntax -get-info]
+(define-values (-read -read-syntax -get-info)
   (make-meta-reader
-    'enda
+    'parendown
     "language path"
     lang-reader-module-paths
     wrap-reader
