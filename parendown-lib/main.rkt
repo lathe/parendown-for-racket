@@ -86,18 +86,9 @@
 
 ; Racket's `peek-char` lets you skip a number of *bytes*, but not a
 ; number of characters. This one lets you skip a number of characters.
-;
-; TODO: There's gotta be a more efficient way to do this, right?
-;
 (define (peek-char-skipping-chars in skip-chars-amt)
-  (let loop ([bytes-amt-to-attempt 0])
-    (define peeked-byte (peek-byte in bytes-amt-to-attempt))
-    (if (eof-object? peeked-byte)
-      peeked-byte
-      (let ([peeked-string (peek-string bytes-amt-to-attempt 0 in)])
-        (if (< skip-chars-amt (string-length peeked-string))
-          (string-ref peeked-string skip-chars-amt)
-          (loop (add1 bytes-amt-to-attempt)))))))
+  (let ([peeked-string (peek-string (add1 skip-chars-amt) 0 in)])
+    (string-ref peeked-string skip-chars-amt)))
 
 (define (non-terminating-char? readtable x)
   (and (char? x)
