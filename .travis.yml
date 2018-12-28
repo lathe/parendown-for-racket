@@ -1,0 +1,73 @@
+language: c
+
+sudo: false
+
+branches:
+  only:
+  - master
+
+env:
+  global:
+    - RACKET_DIR=~/racket
+    - TRAVIS_RACKET_DIR=~/travis-racket
+    - PACKAGE=parendown
+  matrix:
+    - RACKET_VERSION=6.12
+    - RACKET_VERSION=HEAD
+
+matrix:
+  allow_failures:
+    - env: RACKET_VERSION=HEAD
+  # Fast finish: The overall build result is determined as soon as any
+  # of the rows have failed or all of the rows that aren't allowed to
+  # fail have succeeded.
+  fast_finish: true
+
+
+
+# Build lifecycle steps
+
+
+before_install:
+  # We install Racket.
+  - git clone https://github.com/greghendershott/travis-racket.git "${TRAVIS_RACKET_DIR}"
+  - cat "${TRAVIS_RACKET_DIR}/install-racket.sh" | bash
+  - export PATH="${RACKET_DIR}/bin:${PATH}"
+
+script:
+  # This (and most of the rest of this file) is adapted from the
+  # sample .travis.yml at
+  # <https://github.com/greghendershott/travis-racket>.
+
+  # We install each package directory as a linked package, and we
+  # automatically fetch all the dependencies.
+  - cd "${PACKAGE}-lib/"
+  - raco pkg install --deps search-auto
+  - cd ..
+  - cd "${PACKAGE}-doc/"
+  - raco pkg install --deps search-auto
+  - cd ..
+  - cd "${PACKAGE}-test/"
+  - raco pkg install --deps search-auto
+  - cd ..
+  # This one must be installed after the `...-doc` and `...-test`
+  # packages since otherwise it'll install them from from the Racket
+  # package index.
+  - cd "${PACKAGE}/"
+  - raco pkg install --deps search-auto
+  - cd ..
+
+  # We recompile the collection (the single collection which all these
+  # packages populate) and check that the package dependencies
+  # declared in each info.rkt are correct. (TODO: Why does
+  # travis-racket suggest this? Is there a chance `raco setup` fails
+  # when `raco pkg install` doesn't?)
+  - raco setup --check-pkg-deps "${PACKAGE}"
+
+  # We run tests according to the way the DrDr continuous testing
+  # system does. This imitates the settings used by the Racket package
+  # index at <https://pkgs.racket-lang.org/>.
+  - raco test --drdr --package "${PACKAGE}-lib"
+  - raco test --drdr --package "${PACKAGE}-doc"
+  - raco test --drdr --package "${PACKAGE}-test"
+  - raco test --drdr --package "${PACKAGE}"

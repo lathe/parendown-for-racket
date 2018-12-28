@@ -26,12 +26,24 @@
     racket/base
     (only-in racket/match match)
     (only-in syntax/parse id syntax-parse))
-  (only-in racket/contract/base case-> -> any any/c or/c)
-  (only-in racket/contract/region define/contract)
+  (only-in racket/contract/base -> any/c case-> contract-out or/c)
   (only-in racket/undefined undefined)
   (only-in syntax/readerr raise-read-error))
 
-(provide parendown-readtable-handler pd)
+(provide
+  pd
+  (contract-out
+    [parendown-readtable-handler
+      (case->
+        (-> char? input-port? any/c)
+        (->
+          char?
+          input-port?
+          any/c
+          (or/c #f exact-positive-integer?)
+          (or/c #f exact-nonnegative-integer?)
+          (or/c #f exact-positive-integer?)
+          any/c))]))
 
 
 
@@ -104,17 +116,7 @@
               (eq? 'a (read (open-input-string symbol-name))))))))))
 
 
-(define/contract parendown-readtable-handler
-  (case->
-    (-> char? input-port? any)
-    (->
-      char?
-      input-port?
-      any/c
-      (or/c #f exact-positive-integer?)
-      (or/c #f exact-nonnegative-integer?)
-      (or/c #f exact-positive-integer?)
-      any))
+(define parendown-readtable-handler
   (case-lambda
     [ (name in)
       (define-values (line col pos) (port-next-location in))
@@ -262,17 +264,11 @@
               (string-append
                 "read: illegal use of `" (string dot-char) "'")
               src dot-line dot-col dot-pos dot-span))
-          (define (peek-after-whitespace-and-comments-force)
-            (define next-char (peek-after-whitespace-and-comments))
-            (when (like-default next-char #\#)
-              (read-char in)
-              (dot-err))
-            next-char)
           
           (read-char in)
           (define elem (read-skipping-comments))
           (define possible-next-dot-or-closing
-            (peek-after-whitespace-and-comments-force))
+            (peek-after-whitespace-and-comments))
           (cond
             [(eof-object? possible-next-dot-or-closing) (dot-err)]
             [ (and accept-infix-dot
@@ -296,7 +292,7 @@
               
               (set! listening-for-dots #f)
               (define possible-closing
-                (peek-after-whitespace-and-comments-force))
+                (peek-after-whitespace-and-comments))
               (when (eof-object? possible-closing)
                 ; TODO: This prints garbage to the console, but this
                 ; has parity with Racket. See if this is a bug that
