@@ -250,9 +250,13 @@ For both variable shadowing and Parendown, we have a kind of *lexical* state upd
 In this way, Parendown and variable shadowing are techniques that should be adopted or avoided on the basis of how the code is edited. One parts of the code may undergo edits in such a way where Parendown's ability to approximate infix syntax comes in handy. Another part may involve two nested variable bindings which could easily use the same name, but for which we expect it to be a mistake if a future maintainer switches one for the other, so it's best for their names to be distinct until further notice. Of course, since a programmer can come in and refactor a variable name or substitute a strong opening paren for a weak one at any time, this kind of decision is always reversible.
 
 
-## Usage
+## Installation and use
 
-Parendown is a language extension for Racket. To use it, `raco pkg install parendown`, and then if you usually write something like `#lang racket` at the top of your files, write something like `#lang parendown racket` instead. Since Parendown is sugar for parentheses, it'll come in handy for just about any s-expression-based language.
+This is a library for Racket. To install it from the Racket package index, run `raco pkg install parendown`. Then you can change the `#lang` line of your Racket modules to `#lang parendown <other language>`, where `#lang <other language>` is the line you were using before. Since Parendown is sugar for parentheses, it'll be a handy extension to just about any Racket language where parentheses have their usual Racket behavior.
+
+To install it from source, run `raco pkg install --deps search-auto` from the `lathe-comforts-lib/` directory.
+
+[Documentation for Parendown for Racket](http://docs.racket-lang.org/parendown/index.html) is available at the Racket documentation website, and it's maintained in the `parendown-doc/` directory.
 
 If you're writing your own reader extensions, you can add Parendown functionality to your readtable like so:
 
@@ -265,7 +269,7 @@ If you're writing your own reader extensions, you can add Parendown functionalit
 
 This gives you the opportunity to use a syntax other than `#/` if you prefer.
 
-In certain circumstances, it's inconvenient to change the reader. For instance, Parendown's reader syntax doesn't get rendered properly in Scribble documentation examples, and we're not aware of any way to fix this. In this case, you can achieve a similar effect by using Parendown as a Racket library, importing the `pd` macro:
+In certain circumstances, it's inconvenient to change the reader. Most of the advantages of Parendown are also available in the form of the `pd` syntax transformer:
 
 ```
 #lang racket/base
