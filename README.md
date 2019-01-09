@@ -290,7 +290,7 @@ The `pd` form also expands calls of the form `(pd (a b c))` simply to `(a b c)`.
 
 ## Related work
 
-These syntaxes take primary inspiration from the Arc language's abbreviation of `(a (b c))` as `(a:b c)`. Arc restricted this to a single symbol, but it's possible there have been similar generalizations of this syntax based on Arc's syntax, particularly appearing in alternative implementations of Arc such as suzuki's Semi-Arc and early versions of dido's Arcueid. We're pretty sure Pauan's Nulan has used a generalization just like Parendown's.
+These syntaxes take primary inspiration from the Arc language's abbreviation of `(a (b c))` as `(a:b c)`, as well as a `(scope let a 1 @ let b 2 @ + a b)` syntax [posted by Yuval Lando on Arc Forum](http://arclanguage.org/item?id=11934). Arc restricted `(a:b c)` so that the part before the `:` could only be a single symbol, but it's possible there have been similar reimaginings of Arc's syntax. Pauan's Nulan project may have used a syntax just like Parendown's.
 
 The Haskell operator `$` predates all of these, and it has the very similar effect of allowing `(a b $ c d)` instead of `(a b (c d))` for function calls in that language. In fact, the benefits of this sugar in continuation-passing style were known at least as far back as the Haskell 1.2 report from 1992 (page 85):
 
