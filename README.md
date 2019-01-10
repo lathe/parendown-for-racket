@@ -254,7 +254,7 @@ In this way, Parendown and variable shadowing are techniques that should be adop
 
 This is a library for Racket. To install it from the Racket package index, run `raco pkg install parendown`. Then you can change the `#lang` line of your Racket modules to `#lang parendown <other language>`, where `#lang <other language>` is the line you were using before. Since Parendown is sugar for parentheses, it'll be a handy extension to just about any Racket language where parentheses have their usual Racket behavior.
 
-To install it from source, run `raco pkg install --deps search-auto` from the `lathe-comforts-lib/` directory.
+To install it from source, run `raco pkg install --deps search-auto` from the `parendown-lib/` directory.
 
 [Documentation for Parendown for Racket](http://docs.racket-lang.org/parendown/index.html) is available at the Racket documentation website, and it's maintained in the `parendown-doc/` directory.
 
