@@ -290,7 +290,9 @@ The `pd` form also expands calls of the form `(pd (a b c))` simply to `(a b c)`.
 
 ## Related work
 
-These syntaxes take primary inspiration from the Arc language's abbreviation of `(a (b c))` as `(a:b c)`, as well as a `(scope let a 1 @ let b 2 @ + a b)` syntax [posted by Yuval Lando on Arc Forum](http://arclanguage.org/item?id=11934). Arc restricted `(a:b c)` so that the part before the `:` could only be a single symbol, but it's possible there have been similar reimaginings of Arc's syntax. Pauan's Nulan project may have used a syntax just like Parendown's.
+These syntaxes take primary inspiration from the Arc language's abbreviation of `(a (b c))` as `(a:b c)` (which only worked when `a` and `b` were symbols), as well as a `(scope let a 1 @ let b 2 @ + a b)` syntax [posted by Yuval Lando on Arc Forum](http://arclanguage.org/item?id=11934). Ross Angle (rocketnia) developed some languages (including what's become [Era's Cene language](https://github.com/era-platform/cene-for-racket)) which renamed this `:` to `/` and generalized it. Parendown (another project started by that author) brings that generalized syntax to Racket.
+
+At some point, Pauan's Nulan project may have used a syntax like this as well.
 
 The Haskell operator `$` predates all of these, and it has the very similar effect of allowing `(a b $ c d)` instead of `(a b (c d))` for function calls in that language. In fact, the benefits of this sugar in continuation-passing style were known at least as far back as the Haskell 1.2 report from 1992 (page 85):
 
@@ -301,4 +303,17 @@ The Haskell operator `$` predates all of these, and it has the very similar effe
 f $ x                   =  f x
 ```
 
-Once Ross Angle (rocketnia) implemented the sugar `(a b /c d)` for use in new Lispy languages they were working on (including [Era's Cene language](https://github.com/era-platform/cene-for-racket)) and experimented with a change in indentation style, that experience formed the direct precursor of this Parendown library for Racket. Parendown brings Racket a little bit closer to Cene, and many of the other Lathe libraries, which are built on Parendown, bring it closer still. In turn, the experience with these tools in Racket feeds back into the design of the Cene language.
+Even 28 years earlier than that (1974), [Interlisp](http://bitsavers.trailing-edge.com/pdf/xerox/interlisp/Interlisp_Reference_Manual_1974.pdf) had a similar behavior. It called `[` and `]` "super-parentheses," and the combination of `[`, `(`, and `]` in Interlisp worked roughly like the combination of `(`, `#/`, and `)` does in a `#lang parendown racket` program:
+
+```
+The INTERLISP read program treats square brackets as 'super-parentheses': a
+right square bracket automatically supplies enough right parentheses to match
+back to the last left square bracket (in the expression being read), or if none
+has appeared, to match the first left parentheses,
+e.g.,    (A (B (C]=(A (B (C))),
+         (A [B (C (D] E)=(A (B (C (D))) E).
+```
+
+[A 2006 paper by Anssi Yli-Jyrä](http://www.linguistics.fi/julkaisut/SKY2006_1/2.6.9.%20YLI-JYRA.pdf) reviews a few different designs for parentheses Interlisp approach alongside a few other notations with similar purposes. That author favors this approach, where this time `[`, `〈`, and `]` serve the same purposes as `(`, `#/`, and `)` in the Parendown approach:
+
+> Krauwer and des Tombe (1981) proposed _condensed labelled bracketing_ that can be defined as follows. Special brackets (here we use angle brackets) mark those initial and final branches that allow an omission of a bracket on one side in their realized markup. The omission is possible on the side where a normal bracket (square bracket) indicates, as a side-effect, the boundary of the phrase covered by the branch. For example, bracketing "[[A B] [C [D]]]" can be replaced with "[A B〉 〈C 〈D]" using this approach.
