@@ -314,6 +314,6 @@ e.g.,    (A (B (C]=(A (B (C))),
          (A [B (C (D] E)=(A (B (C (D))) E).
 ```
 
-[A 2006 paper by Anssi Yli-Jyrä](http://www.linguistics.fi/julkaisut/SKY2006_1/2.6.9.%20YLI-JYRA.pdf) reviews a few different designs for parentheses Interlisp approach alongside a few other notations with similar purposes. That author favors this approach, where this time `[`, `〈`, and `]` serve the same purposes as `(`, `#/`, and `)` in the Parendown approach:
+[A 2006 paper by Anssi Yli-Jyrä](http://www.linguistics.fi/julkaisut/SKY2006_1/2.6.9.%20YLI-JYRA.pdf) reviews a few different designs, including the Interlisp design. That author ultimately favors the following approach, where this time `[`, `〈`, and `]` serve the same purposes as `(`, `#/`, and `)` serve with Parendown:
 
 > Krauwer and des Tombe (1981) proposed _condensed labelled bracketing_ that can be defined as follows. Special brackets (here we use angle brackets) mark those initial and final branches that allow an omission of a bracket on one side in their realized markup. The omission is possible on the side where a normal bracket (square bracket) indicates, as a side-effect, the boundary of the phrase covered by the branch. For example, bracketing "[[A B] [C [D]]]" can be replaced with "[A B〉 〈C 〈D]" using this approach.
