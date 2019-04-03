@@ -290,11 +290,13 @@ The `pd` form also expands calls of the form `(pd (a b c))` simply to `(a b c)`.
 
 ## Related work
 
-These syntaxes take primary inspiration from the Arc language's abbreviation of `(a (b c))` as `(a:b c)` (which only worked when `a` and `b` were symbols), as well as a `(scope let a 1 @ let b 2 @ + a b)` syntax [posted by Yuval Lando on Arc Forum](http://arclanguage.org/item?id=11934). Ross Angle (rocketnia) developed some languages (including what's become [Era's Cene language](https://github.com/era-platform/cene-for-racket)) which renamed this `:` to `/` and generalized it. Parendown (another project started by that author) brings that generalized syntax to Racket.
+It turns out Hendrik Boom developed the same syntax some time ago (even down to the choice of the character `/`) in an unreleased language described [here](http://topoi.pooq.com/hendrik/ComputerProjects/index.html). Hendrik Boom even used the same indentation style, calling it [tail-indentation](https://groups.google.com/d/msg/racket-users/oLR_7L-g9zc/fZXaMkfQCAAJ) in analogy to tail calls.
+
+In terms of direct influences, the Parendown syntaxes take primary inspiration from the Arc language's abbreviation of `(a (b c))` as `(a:b c)` (which only worked when `a` and `b` were symbols), as well as a `(scope let a 1 @ let b 2 @ + a b)` syntax [posted by Yuval Lando on Arc Forum](http://arclanguage.org/item?id=11934). Ross Angle (rocketnia) developed some languages (including what's become [Era's Cene language](https://github.com/era-platform/cene-for-racket)) which renamed this `:` to `/` and generalized it. Parendown (another project started by that author) brings that generalized syntax to Racket.
 
 At some point, Pauan's Nulan project may have used a syntax like this as well.
 
-The Haskell operator `$` predates all of these, and it has the very similar effect of allowing `(a b $ c d)` instead of `(a b (c d))` for function calls in that language. In fact, the benefits of this sugar in continuation-passing style were known at least as far back as the Haskell 1.2 report from 1992 (page 85):
+The Haskell operator `$` predates at least the Arc syntax, and it has the very similar effect of allowing `(a b $ c d)` instead of `(a b (c d))` for function calls in that language. In fact, the benefits of this sugar in continuation-passing style were known at least as far back as the Haskell 1.2 report from 1992 (page 85):
 
 ```
 -- right-associating infix application operator (useful in continuation-
@@ -303,7 +305,7 @@ The Haskell operator `$` predates all of these, and it has the very similar effe
 f $ x                   =  f x
 ```
 
-Even 28 years earlier than that (1974), [Interlisp](http://bitsavers.trailing-edge.com/pdf/xerox/interlisp/Interlisp_Reference_Manual_1974.pdf) had a similar behavior. It called `[` and `]` "super-parentheses," and the combination of `[`, `(`, and `]` in Interlisp worked roughly like the combination of `(`, `#/`, and `)` does in a `#lang parendown racket` program:
+As early as 1974, [Interlisp](http://bitsavers.trailing-edge.com/pdf/xerox/interlisp/Interlisp_Reference_Manual_1974.pdf) had a similar behavior. It called `[` and `]` "super-parentheses," and the combination of `[`, `(`, and `]` in Interlisp worked roughly like the combination of `(`, `#/`, and `)` does in a `#lang parendown racket` program:
 
 ```
 The INTERLISP read program treats square brackets as 'super-parentheses': a
