@@ -138,4 +138,52 @@
         (define (fallback) (-get-info key default-value))
         (case key
           [(color-lexer) (wrap-color-lexer -get-info)]
+          
+          ; TODO: Consider providing behavior for the following other
+          ; extension points:
+          ;
+          ;   drracket:indentation
+          ;     - Determining the number of spaces to indent a new
+          ;       line by. For Parendown, it would be nice to indent
+          ;       however the base language indents, but counting the
+          ;       weak opening paren as an opening parenthesis (so
+          ;       that the new line ends up indented further than a
+          ;       preceding weak opening paren).
+          ;
+          ;   drracket:keystrokes
+          ;     - Determining actions to take in response to
+          ;       keystrokes. For Parendown, it might be nice to make
+          ;       it so that when a weak opening paren is typed at the
+          ;       beginning of a line (with some amount of
+          ;       indentation), the line is reindented to be flush
+          ;       with a preceding normal or weak opening paren).
+          ;
+          ;   configure-runtime
+          ;     - Initializing the Racket runtime for executing a
+          ;       Parendown-language module directly or interacting
+          ;       with it at a REPL. For Parendown, it might be nice
+          ;       to let the weak opening paren be used at the REPL.
+          ;       Then again, will that modify the current readtable
+          ;       in a way people don't expect when they run a module
+          ;       directly? Also, for this to work, we need to have
+          ;       Parendown attach a `'module-language` syntax
+          ;       property to the module's syntax somewhere. Is it
+          ;       possible to do that while also passing through the
+          ;       base language's `'module-language` declaration?
+          ;
+          ;   drracket:submit-predicate
+          ;     - Determining whether a REPL input is complete. For
+          ;       Parendown, if we're supporting weak opening parens
+          ;       at the REPL, we should just make sure inputs with
+          ;       weak opening parens are treated as we expect. We
+          ;       might not need to extend this.
+          ;
+          ;   module-language
+          ;     - Is this the right place to look for this key? It's a
+          ;       key to the `#:info` specification for
+          ;       `#lang syntax/module-reader`, but maybe that's not
+          ;       related. Other places in the documentation that talk
+          ;       about `'module-language` are referring to a syntax
+          ;       property.
+          
           [else (fallback)])))))
