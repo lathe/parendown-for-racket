@@ -1,6 +1,6 @@
 # Parendown
 
-[![Travis build](https://travis-ci.org/lathe/parendown-for-racket.svg?branch=master)](https://travis-ci.org/lathe/parendown-for-racket)
+[![Travis build](https://travis-ci.org/lathe/parendown-for-racket.svg?branch=main)](https://travis-ci.org/lathe/parendown-for-racket)
 
 Parendown adds *weak opening parentheses* to Racket. It's a syntax sugar, and it's as simple as this:
 
