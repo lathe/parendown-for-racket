@@ -250,6 +250,21 @@ For both variable shadowing and Parendown, we have a kind of *lexical* state upd
 In this way, Parendown and variable shadowing are techniques that should be adopted or avoided on the basis of how the code is edited. One parts of the code may undergo edits in such a way where Parendown's ability to approximate infix syntax comes in handy. Another part may involve two nested variable bindings which could easily use the same name, but for which we expect it to be a mistake if a future maintainer switches one for the other, so it's best for their names to be distinct until further notice. Of course, since a programmer can come in and refactor a variable name or substitute a strong opening paren for a weak one at any time, this kind of decision is always reversible.
 
 
+## The `parendown/slash` language
+
+We've chosen `#/` so that Parendown appears seamless with Racket. For many cases, using the syntax `/` is a little nicer. For that purpose, we define `#lang parendown/slash`:
+
+```
+#lang parendown/slash racket/base
+
+(displayln /string-append "Hello, " "world!")
+```
+
+This acts as a non-symbol-terminating readtable extension, so symbols like `syntax/parse` and `any/c` will be usable in the usual way. In order to make sure a `/` weak opening paren isn't treated as part of the preceding symbol, it may be necessary to use whitespace in between.
+
+Symbols beginning with `/`, such as the division operator `/`, may be more difficult to use with this extension in place. However, they can still be referred to using the alternative notations `\/...` and `|/...|`. In the case of division, that means writing `\/` or `|/|`.
+
+
 ## Installation and use
 
 This is a library for Racket. To install it from the Racket package index, run `raco pkg install parendown`. Then you can change the `#lang` line of your Racket modules to `#lang parendown <other language>`, where `#lang <other language>` is the line you were using before. Since Parendown is sugar for parentheses, it'll be a handy extension to just about any Racket language where parentheses have their usual Racket behavior.
@@ -267,7 +282,7 @@ If you're writing your own reader extensions, you can add Parendown functionalit
   parendown-readtable-handler)
 ```
 
-This gives you the opportunity to use a syntax other than `#/` if you prefer.
+This gives you the opportunity to use a syntax other than `#/` or `/` if you prefer.
 
 In certain circumstances, it's inconvenient to change the reader. Most of the advantages of Parendown are also available in the form of the `pd` syntax transformer:
 

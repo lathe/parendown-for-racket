@@ -1,8 +1,8 @@
-#lang parendown racket/base
+#lang parendown/slash racket/base
 
-; parendown/tests
+; parendown/tests/slash
 ;
-; Unit tests.
+; Unit tests for `#lang parendown/slash`.
 
 ;   Copyright 2018, 2021 The Lathe Authors
 ;
@@ -19,19 +19,22 @@
 ;   language governing permissions and limitations under the License.
 
 
-(require #/only-in rackunit check-equal?)
-
-(require #/only-in parendown pd)
+(require /only-in rackunit check-equal?)
 
 ; (We provide nothing from this module.)
 
 
 (check-equal?
-  '(a #/b c #/d . #/e . f . #/g)
+  '(a /b c /d . /e . f . /g)
   '(a (b c (d . (e . f . (g)))))
-  "Using the `#/` reader syntax from `#lang parendown`")
+  "Using the `/` reader syntax from `#lang parendown/slash`")
 
 (check-equal?
-  (pd / quote / a / b c / d f e / g)
-  '(a (b c (d . (e . f . (g)))))
-  "Using the `pd` macro")
+  (\/ 4 2)
+  2
+  "Denoting division as `\\/`")
+
+(check-equal?
+  (|/| 4 2)
+  2
+  "Denoting division as `|/|`")

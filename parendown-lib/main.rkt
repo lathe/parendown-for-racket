@@ -6,7 +6,7 @@
 ; library rather than as a language extension. (The language extension
 ; is implemented in terms of this.)
 
-;   Copyright 2017-2018 The Lathe Authors
+;   Copyright 2017-2018, 2021 The Lathe Authors
 ;
 ;   Licensed under the Apache License, Version 2.0 (the "License");
 ;   you may not use this file except in compliance with the License.
@@ -26,14 +26,16 @@
     racket/base
     (only-in racket/match match)
     (only-in syntax/parse id syntax-parse))
-  (only-in racket/contract/base -> any/c case-> contract-out or/c)
+  (only-in racket/contract/base
+    -> and/c any any/c case-> contract-out or/c)
   (only-in racket/undefined undefined)
   (only-in syntax/readerr raise-read-error))
 
 (provide
   pd
   (contract-out
-    [parendown-readtable-handler
+    [
+      parendown-readtable-handler
       (case->
         (-> char? input-port? any/c)
         (->
@@ -43,7 +45,11 @@
           (or/c #f exact-positive-integer?)
           (or/c #f exact-nonnegative-integer?)
           (or/c #f exact-positive-integer?)
-          any/c))]))
+          any/c))]
+    [
+      parendown-color-lexer
+      (-> (and/c string? immutable?) (-> any/c any/c any)
+        procedure?)]))
 
 
 
@@ -340,3 +346,76 @@
     (when (like-default next-char #\})
       (set! result (syntax-property result 'paren-shape #\{))))
   result)
+
+
+; Parendown's syntax highlighting recognizes the weak open paren as a
+; `'parenthesis` token, and it passes all other processing through to
+; the extended language's syntax highlighter.
+;
+(define (parendown-color-lexer weak-open-paren -get-info)
+  (define weak-open-paren-length (string-length weak-open-paren))
+  
+  ; TODO: Should we check for whether `-get-info` is false before
+  ; calling it here? Other languages seem to do that, but the
+  ; documented contract of `make-meta-reader` specifies that it will
+  ; at least be a `procedure?`, not `(or/c #f procedure?)`.
+  ;
+  (define get-info-fallback-color-lexer (-get-info 'color-lexer #f))
+  
+  (define default-fallback-color-lexer
+    (if (procedure? get-info-fallback-color-lexer)
+      get-info-fallback-color-lexer
+      
+      ; TODO: Why are we using `dynamic-require` here? Other languages
+      ; do it. Is that so they can keep their package dependencies
+      ; small and only depend on DrRacket-related things if the user
+      ; is definitely already using DrRacket?
+      ;
+      ; TODO: Some languages even guard against the possibility that
+      ; the packages they `dynamic-require` don't exist. Should we do
+      ; that here?
+      ;
+      (dynamic-require 'syntax-color/racket-lexer 'racket-lexer)))
+  
+  (define normalized-fallback-color-lexer
+    (if (procedure-arity-includes? default-fallback-color-lexer 3)
+      default-fallback-color-lexer
+      (lambda (in offset mode)
+        (define-values (text sym paren start stop)
+          (default-fallback-color-lexer in))
+        (define backup-distance 0)
+        (define new-mode mode)
+        (values text sym paren start stop backup-distance new-mode))))
+  
+  (lambda (in offset mode)
+    (define peeked (peek-string weak-open-paren-length 0 in))
+    (if (and (string? peeked) (string=? weak-open-paren peeked))
+      (let ()
+        (define-values (line col pos) (port-next-location in))
+        (read-string weak-open-paren-length in)
+        (define text weak-open-paren)
+        (define sym 'parenthesis)
+        (define paren #f)
+        
+        ; TODO: The documentation of `start-colorer` says the
+        ; beginning and ending positions should be *relative* to the
+        ; original `port-next-location` of "the input port passed to
+        ; `get-token`" (called `in` here), but it raises an error if
+        ; we use `(define start 0)`. Is that a documentation issue?
+        ; Perhaps it should say "the input port passed to the first
+        ; call to `get-token`."
+        ;
+        (define start pos)
+        (define stop (+ start weak-open-paren-length))
+        
+        (define backup-distance 0)
+        
+        ; TODO: Does it always make sense to preserve the mode like
+        ; this? Maybe some color lexers would want their mode updated
+        ; in a different way here (not that we can do anything about
+        ; it).
+        ;
+        (define new-mode mode)
+        
+        (values text sym paren start stop backup-distance new-mode))
+      (normalized-fallback-color-lexer in offset mode))))
