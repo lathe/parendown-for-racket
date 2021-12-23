@@ -156,5 +156,5 @@ There is also a @tt{parendown} module which lets Racket code use some features o
     [original-get-info (-> any/c any/c any)])
   procedure?
 ]{
-  Given the syntax of a weak opening paren as a string, and given a language's @racket[_get-info] procedure (like one returned by @racket[read-language]), returns a procedure suitable for a @racket[_get-info] procedure to return in response to a request for @racket['color-lexer]. This lexer implements syntax highlighting in nearly the same way @racket[original-get-info] does, but it recognizes @racket[weak-open-paren] as a parenthesis.
+  Given the syntax of a weak opening paren as a string (e.g., @racket["#/"] or @racket["/"]), and given a language's @racket[_get-info] procedure (like one returned by @racket[read-language]), returns a procedure that a @racket[_get-info] procedure can return in response to a request for @racket['color-lexer]. This lexer implements syntax highlighting in nearly the same way @racket[original-get-info] does, but it recognizes @racket[weak-open-paren] as a parenthesis.
 }
