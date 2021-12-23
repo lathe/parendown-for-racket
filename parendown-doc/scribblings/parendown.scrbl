@@ -44,11 +44,11 @@ Parendown adds @emph{weak opening parentheses} to Racket in the form of a langua
 
 The @tt{parendown} language is a language extension. To use it, specify another language after @tt{parendown} on the @hash-lang[] line, and that language will have its readtable extended with a @tt{#/} syntax that behaves according to @racket[parendown-readtable-handler].
 
-@racketblock[
-  @#,racketmetafont{@hash-lang[] parendown @racketmodname[racket/base]}
+@codeblock{
+  #lang parendown racket/base
   
-  (displayln @#,tt{#/}string-append "Hello, " "world!")
-]
+  (displayln #/string-append "Hello, " "world!")
+}
 
 
 @section[#:tag "parendown-library"]{Parendown as a Library}
