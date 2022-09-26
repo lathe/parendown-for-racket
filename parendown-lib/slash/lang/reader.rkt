@@ -56,7 +56,7 @@
       (lambda (key default-value)
         (define (fallback) (-get-info key default-value))
         (case key
-          [(color-lexer) (parendown-color-lexer "#/" -get-info)]
+          [(color-lexer) (parendown-color-lexer "/" -get-info)]
           
           ; TODO: Consider providing behavior for additional extension
           ; points. See the corresponding comment in the
