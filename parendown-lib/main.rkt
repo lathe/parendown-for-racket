@@ -102,8 +102,8 @@
 ; Racket's `peek-char` lets you skip a number of *bytes*, but not a
 ; number of characters. This one lets you skip a number of characters.
 (define (peek-char-skipping-chars in skip-chars-amt)
-  (let ([peeked-string (peek-string (add1 skip-chars-amt) 0 in)])
-    (string-ref peeked-string skip-chars-amt)))
+  (define peeked-string (peek-string (add1 skip-chars-amt) 0 in))
+  (string-ref peeked-string skip-chars-amt))
 
 (define (non-terminating-char? readtable x)
   (and (char? x)
