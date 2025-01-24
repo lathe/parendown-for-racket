@@ -72,14 +72,11 @@
         (let loop ([stx #'(rest ...)])
           (syntax-parse stx
             [ (first . rest)
-              (if
-                (and
-                  (identifier? #'first)
-                  (bound-identifier=? #'sample #'first))
-                (begin
-                  (set! uses (cons #'first uses))
-                  #`(#,(loop #'rest)))
-                #`(#,(loop #'first) . #,(loop #'rest)))]
+              (cond
+                [(and (identifier? #'first) (bound-identifier=? #'sample #'first))
+                 (set! uses (cons #'first uses))
+                 #`(#,(loop #'rest))]
+                [else #`(#,(loop #'first) . #,(loop #'rest))])]
             [_ stx])))
       #`(begin
           ; We generate fake binding and usage sites just so the
@@ -204,12 +201,12 @@
               
               (cond
                 [ (like-default first #\#)
-                  (if (like-default second #\|)
-                    (begin
-                      (read-char in)
-                      (read-rest-of-fake-nested-comment)
-                      (read-rest-of-fake-nested-comment))
-                    (read-rest-of-fake-nested-comment))]
+                  (cond
+                    [(like-default second #\|)
+                     (read-char in)
+                     (read-rest-of-fake-nested-comment)
+                     (read-rest-of-fake-nested-comment)]
+                    [else (read-rest-of-fake-nested-comment)])]
                 [ (like-default first #\|)
                   (if (like-default second #\#)
                     (read-char in)
