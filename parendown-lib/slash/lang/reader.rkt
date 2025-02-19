@@ -34,16 +34,12 @@
     [-read-syntax read-syntax]
     [-get-info get-info]))
 
-(define (wrap-reader -read)
-  (lambda args
-    (parameterize
-      (
-        [
-          current-readtable
-          (make-readtable (current-readtable)
-            #\/ 'non-terminating-macro parendown-readtable-handler)])
-      
-      (apply -read args))))
+(define ((wrap-reader -read) . args)
+  (parameterize
+      ([current-readtable
+        (make-readtable (current-readtable) #\/ 'non-terminating-macro parendown-readtable-handler)])
+
+    (apply -read args)))
 
 (define-values (-read -read-syntax -get-info)
   (make-meta-reader
