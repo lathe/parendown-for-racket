@@ -33,30 +33,26 @@
     [-read-syntax read-syntax]
     [-get-info get-info]))
 
-(define (wrap-reader -read)
-  (lambda args
-    (parameterize
-      (
-        [
-          current-readtable
-          
-          ; NOTE: There are many syntaxes we could have used for this,
-          ; but we're using `#/`. Using `/` like Cene does would be
-          ; riskier, because many symbols in Racket conain `/` in
-          ; their names. Nevertheless, we the commented-out code in
-          ; the alternative language `#lang parendown/slash`. It
-          ; requires us to put whitespace between a Parendown weak
-          ; opening paren `/` and any preceding symbol, but we've been
-          ; using whitespace like that anyway.
-          ;
-          ; A change to this code should coincide with a change to the
-          ; hardcoded `"#/"` string in the `color lexer` case below.
-          ;
-          (make-readtable (current-readtable)
-            #\/ 'dispatch-macro parendown-readtable-handler)])
-;            #\/ 'non-terminating-macro parendown-readtable-handler)])
-      
-      (apply -read args))))
+(define ((wrap-reader -read) . args)
+  (parameterize (; NOTE: There are many syntaxes we could have used for this,
+                 ; but we're using `#/`. Using `/` like Cene does would be
+                 ; riskier, because many symbols in Racket conain `/` in
+                 ; their names. Nevertheless, we the commented-out code in
+                 ; the alternative language `#lang parendown/slash`. It
+                 ; requires us to put whitespace between a Parendown weak
+                 ; opening paren `/` and any preceding symbol, but we've been
+                 ; using whitespace like that anyway.
+                 ;
+                 ; A change to this code should coincide with a change to the
+                 ; hardcoded `"#/"` string in the `color lexer` case below.
+                 ;
+                 [current-readtable (make-readtable (current-readtable)
+                                                    #\/
+                                                    'dispatch-macro
+                                                    parendown-readtable-handler)])
+    ;            #\/ 'non-terminating-macro parendown-readtable-handler)])
+
+    (apply -read args)))
 
 (define-values (-read -read-syntax -get-info)
   (make-meta-reader
