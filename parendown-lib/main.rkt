@@ -248,85 +248,81 @@
             "`" (string name) "'")
           src line col pos span))
       
-      (if
-        (and listening-for-dots
-          (like-default next-char #\.)
-          (not
-            (non-terminating-char? (current-readtable)
-              ; TODO: This is the only place we peek more than one
-              ; character ahead. See if the official reader performs a
-              ; read and then a peek here instead.
-              (peek-char-skipping-chars in 1))))
-        (let ()
-          (define-values (dot-line dot-col dot-pos)
-            (port-next-location in))
-          (define dot-span 1)
-          (define dot-char next-char)
-          (define (dot-err [dot-char dot-char])
-            (raise-read-error
-              (string-append
-                "read: illegal use of `" (string dot-char) "'")
-              src dot-line dot-col dot-pos dot-span))
-          
-          (read-char in)
-          (define elem (read-skipping-comments))
-          (define possible-next-dot-or-closing
-            (peek-after-whitespace-and-comments))
-          (cond
-            [(eof-object? possible-next-dot-or-closing) (dot-err)]
-            [ (and accept-infix-dot
-                (like-default possible-next-dot-or-closing #\.))
-              
-              (read-char in)
-              
-              ; NOTE: In the built-in list syntax, the syntax
-              ; (1 2 . 3 . *), where * is a custom reader macro that
-              ; returns a special comment, reads as (1 2). For parity,
-              ; we don't add the infix operator to the list until we
-              ; encounter the next non-comment list element. Note that
-              ; comments like ; #; and #| are skipped a different way
-              ; (emulated here by
-              ; `peek-after-whitespace-and-comments`), so they don't
-              ; exhibit the same behavior.
-              (set! action-on-non-comment
-                (lambda ()
-                  (set! action-on-non-comment void)
-                  (set! rev-elems (append rev-elems (list elem)))))
-              
-              (set! listening-for-dots #f)
-              (define possible-closing
-                (peek-after-whitespace-and-comments))
-              (when (eof-object? possible-closing)
-                ; TODO: This prints garbage to the console, but this
-                ; has parity with Racket. See if this is a bug that
-                ; needs to be fixed in Racket.
-                (dot-err (integer->char #xFFFD)))
-              (when (closing? possible-closing)
-                (dot-err possible-closing))
-              
-              ; We've read the operator of an infix list, and there's
-              ; still more to go after that, so we continue the loop.
-              #f]
-            [ (closing? possible-next-dot-or-closing)
-              (set! improper-tail elem)
-              (set! next-char possible-next-dot-or-closing)
-              
-              ; We've read the end of an improper list, so we exit the
-              ; loop.
-              #t]
-            [ #t
-              
-              ; The usual error for (10 20 . 30 40) reads the "4" from
-              ; the stream before it raises its error, so we do the
-              ; same thing.
-              (read-char in)
-              
-              (dot-err)]))
-        
+      (cond
+        [(and listening-for-dots
+              (like-default next-char #\.)
+              (not (non-terminating-char? (current-readtable)
+                                          ; TODO: This is the only place we peek more than one
+                                          ; character ahead. See if the official reader performs a
+                                          ; read and then a peek here instead.
+                                          (peek-char-skipping-chars in 1))))
+         (define-values (dot-line dot-col dot-pos) (port-next-location in))
+         (define dot-span 1)
+         (define dot-char next-char)
+         (define (dot-err [dot-char dot-char])
+           (raise-read-error (string-append "read: illegal use of `" (string dot-char) "'")
+                             src
+                             dot-line
+                             dot-col
+                             dot-pos
+                             dot-span))
+      
+         (read-char in)
+         (define elem (read-skipping-comments))
+         (define possible-next-dot-or-closing (peek-after-whitespace-and-comments))
+         (cond
+           [(eof-object? possible-next-dot-or-closing) (dot-err)]
+           [(and accept-infix-dot (like-default possible-next-dot-or-closing #\.))
+      
+            (read-char in)
+      
+            ; NOTE: In the built-in list syntax, the syntax
+            ; (1 2 . 3 . *), where * is a custom reader macro that
+            ; returns a special comment, reads as (1 2). For parity,
+            ; we don't add the infix operator to the list until we
+            ; encounter the next non-comment list element. Note that
+            ; comments like ; #; and #| are skipped a different way
+            ; (emulated here by
+            ; `peek-after-whitespace-and-comments`), so they don't
+            ; exhibit the same behavior.
+            (set! action-on-non-comment
+                  (lambda ()
+                    (set! action-on-non-comment void)
+                    (set! rev-elems (append rev-elems (list elem)))))
+      
+            (set! listening-for-dots #f)
+            (define possible-closing (peek-after-whitespace-and-comments))
+            (when (eof-object? possible-closing)
+              ; TODO: This prints garbage to the console, but this
+              ; has parity with Racket. See if this is a bug that
+              ; needs to be fixed in Racket.
+              (dot-err (integer->char #xFFFD)))
+            (when (closing? possible-closing)
+              (dot-err possible-closing))
+      
+            ; We've read the operator of an infix list, and there's
+            ; still more to go after that, so we continue the loop.
+            #f]
+           [(closing? possible-next-dot-or-closing)
+            (set! improper-tail elem)
+            (set! next-char possible-next-dot-or-closing)
+      
+            ; We've read the end of an improper list, so we exit the
+            ; loop.
+            #t]
+           [#t
+      
+            ; The usual error for (10 20 . 30 40) reads the "4" from
+            ; the stream before it raises its error, so we do the
+            ; same thing.
+            (read-char in)
+      
+            (dot-err)])]
+      
         ; If the next character is not a dot, or if we're not
         ; listening for dots, we exit the loop if we've reached a
         ; closing paren.
-        (closing? next-char)))
+        [else (closing? next-char)]))
     (define elem (read-as-we-should))
     (unless (special-comment? elem)
       (action-on-non-comment)
@@ -386,33 +382,33 @@
   
   (lambda (in offset mode)
     (define peeked (peek-string weak-open-paren-length 0 in))
-    (if (and (string? peeked) (string=? weak-open-paren peeked))
-      (let ()
-        (define-values (line col pos) (port-next-location in))
-        (read-string weak-open-paren-length in)
-        (define text weak-open-paren)
-        (define sym 'parenthesis)
-        (define paren #f)
-        
-        ; TODO: The documentation of `start-colorer` says the
-        ; beginning and ending positions should be *relative* to the
-        ; original `port-next-location` of "the input port passed to
-        ; `get-token`" (called `in` here), but it raises an error if
-        ; we use `(define start 0)`. Is that a documentation issue?
-        ; Perhaps it should say "the input port passed to the first
-        ; call to `get-token`."
-        ;
-        (define start pos)
-        (define stop (+ start weak-open-paren-length))
-        
-        (define backup-distance 0)
-        
-        ; TODO: Does it always make sense to preserve the mode like
-        ; this? Maybe some color lexers would want their mode updated
-        ; in a different way here (not that we can do anything about
-        ; it).
-        ;
-        (define new-mode mode)
-        
-        (values text sym paren start stop backup-distance new-mode))
-      (normalized-fallback-color-lexer in offset mode))))
+    (cond
+      [(and (string? peeked) (string=? weak-open-paren peeked))
+       (define-values (line col pos) (port-next-location in))
+       (read-string weak-open-paren-length in)
+       (define text weak-open-paren)
+       (define sym 'parenthesis)
+       (define paren #f)
+    
+       ; TODO: The documentation of `start-colorer` says the
+       ; beginning and ending positions should be *relative* to the
+       ; original `port-next-location` of "the input port passed to
+       ; `get-token`" (called `in` here), but it raises an error if
+       ; we use `(define start 0)`. Is that a documentation issue?
+       ; Perhaps it should say "the input port passed to the first
+       ; call to `get-token`."
+       ;
+       (define start pos)
+       (define stop (+ start weak-open-paren-length))
+    
+       (define backup-distance 0)
+    
+       ; TODO: Does it always make sense to preserve the mode like
+       ; this? Maybe some color lexers would want their mode updated
+       ; in a different way here (not that we can do anything about
+       ; it).
+       ;
+       (define new-mode mode)
+    
+       (values text sym paren start stop backup-distance new-mode)]
+      [else (normalized-fallback-color-lexer in offset mode)])))
