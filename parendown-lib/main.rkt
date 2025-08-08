@@ -62,15 +62,54 @@
     #;srcloc basis-stx
     #;prop basis-stx))
 
-(define-syntax (pd stx)
-  (syntax-parse stx
+(define-for-syntax (scopes-empty? stx)
+  (bound-identifier=?
+    (datum->syntax stx 'x)
+    (datum->syntax #f 'x)
+    0))
+
+(define-for-syntax (scopes<=? a b)
+  (define b-scopes-fn
+    (make-syntax-delta-introducer (datum->syntax b 'x) #f 0))
+  (scopes-empty? (b-scopes-fn a 'remove)))
+
+(define-for-syntax (autoptic-to? surrounding-stx stx)
+  (scopes<=? surrounding-stx stx))
+
+(define-for-syntax (autoptic-list-to? surrounding-stx lst)
+  (if (syntax? lst)
+    (and (autoptic-to? surrounding-stx lst)
+      (autoptic-list-to? surrounding-stx (syntax-e lst)))
+    (match lst
+      [(cons elem lst) (autoptic-list-to? surrounding-stx lst)]
+      [(list) #t]
+      [_ #f])))
+
+(define-for-syntax (autoptic-lists-to? surrounding-stx lists)
+  (for/and ([lst (in-list lists)])
+    (autoptic-list-to? surrounding-stx lst)))
+
+(define-for-syntax (identifier-would-bind? binding-id potential-usage)
+  (and
+    (identifier? potential-usage)
+    (equal-always? (syntax-e binding-id) (syntax-e potential-usage))
+    (scopes<=? binding-id potential-usage)))
+
+(define-syntax (pd overall-stx)
+  (syntax-parse overall-stx
     
     ; If the input appears to have already been processed by a
     ; surrounding `pd` form, that's fine. In that case `pd` behaves
     ; like an identity operation, having no effect.
-    [(_ {~and rest (_ ...)}) #'rest]
+    [ (_ {~and rest (_ ...)})
+      
+      #:when
+      (autoptic-lists-to? overall-stx (list overall-stx #'rest))
+      
+      #'rest]
     
     [ (_ sample:id rest ...)
+      #:when (autoptic-lists-to? overall-stx (list overall-stx))
       (define (add-to-syntax-property-list prop-name elem stx)
         (syntax-property stx prop-name
           (cons elem (or (syntax-property stx prop-name) (list)))))
@@ -82,14 +121,13 @@
           (let next
             (
               [uses (list)]
-              [stx (rebuild-syntax stx (syntax-e #'(rest ...)))]
+              [ stx
+                (rebuild-syntax overall-stx (syntax-e #'(rest ...)))]
               [then then])
             (syntax-parse stx
               [ (first . rest)
-                (if
-                  (and
-                    (identifier? #'first)
-                    (bound-identifier=? #'sample #'first))
+                #:when (autoptic-to? overall-stx stx)
+                (if (identifier-would-bind? #'sample #'first)
                   (next (cons #'first uses) #'rest
                     (lambda (uses rest)
                       (then uses (rebuild-syntax #'first `(,rest)))))

@@ -5,7 +5,7 @@
 @; Weak opening paren functionality in the form of a language
 @; extension and a library.
 
-@;   Copyright 2018, 2021 The Lathe Authors
+@;   Copyright 2018, 2021, 2025 The Lathe Authors
 @;
 @;   Licensed under the Apache License, Version 2.0 (the "License");
 @;   you may not use this file except in compliance with the License.
@@ -92,6 +92,12 @@ There is also a @tt{parendown} module which lets Racket code use some features o
       (displayln (string-append "Hello, " "world!"))
       (displayln (string-append "I can't use " "division!")))
   ]
+  
+  An occurrence of a cons cell within the @tt{pd} call syntax must have a set of scopes that's equal to or a superset of the set of scopes on the @racket[(@#,tt{pd} _...)] call itself, or that cons cell (and all its contents) will be treated as a miscellaneous datum, rather than further traversed to find @racket[slash-symbol] occurrences inside.
+  
+  An occurrence of @racket[slash-symbol] within the @tt{pd} call syntax must have a set of scopes that's equal to or a superset of the set of scopes on the binding occurrence of @racket[slash-symbol], or it'll be treated as a miscellaneous datum.
+  
+  These behaviors ensure that a @tt{pd} call that occurs within a macro's expansion template can have everyday Racket expressions interpolated into it by the template, without misinterpreting those expressions' syntactic structure.
 }
 
 @defform[
@@ -129,6 +135,8 @@ There is also a @tt{parendown} module which lets Racket code use some features o
   ]
   
   This behavior makes it so occurrences of the @tt{pd} form can be generously added wherever they're suspected to be needed, without causing conflicts with each other.
+  
+  An occurrence of a cons cell within the @tt{pd} call syntax must have a set of scopes that's equal to or a superset of the set of scopes on the @racket[(@#,tt{pd} _...)] call itself. This behavior ensures that a @tt{pd} call that occurs within a macro's expansion template can have everyday Racket expressions interpolated into it by the template, without misinterpreting those expressions' syntactic structure.
 }
 
 @defproc*[(
