@@ -74,29 +74,43 @@
       (define (add-to-syntax-property-list prop-name elem stx)
         (syntax-property stx prop-name
           (cons elem (or (syntax-property stx prop-name) (list)))))
-      (define uses (list))
-      (define processed
-        (let loop ([stx (rebuild-syntax stx (syntax-e #'(rest ...)))])
-          (syntax-parse stx
-            [ (first . rest)
-              (if
-                (and
-                  (identifier? #'first)
-                  (bound-identifier=? #'sample #'first))
-                (begin
-                  (set! uses (cons #'first uses))
-                  (rebuild-syntax #'first `(,(loop #'rest))))
-                (rebuild-syntax stx
-                  `(,(loop #'first) . ,(loop #'rest))))]
-            [_ stx])))
-      #`(begin
-          ; We generate fake binding and usage sites just so the
-          ; Check Syntax binding arrows look good in DrRacket.
-          (let ()
-            (define-syntax (sample stx) #'(void))
-            #,@uses
-            (void))
-          #,processed)]))
+      ; NOTE: This is a continuation-passing-style loop. The
+      ; continuation is called `then`. The continuation-passing-style
+      ; recursion of the loop is called `next`.
+      (
+        (lambda (then)
+          (let next
+            (
+              [uses (list)]
+              [stx (rebuild-syntax stx (syntax-e #'(rest ...)))]
+              [then then])
+            (syntax-parse stx
+              [ (first . rest)
+                (if
+                  (and
+                    (identifier? #'first)
+                    (bound-identifier=? #'sample #'first))
+                  (next (cons #'first uses) #'rest
+                    (lambda (uses rest)
+                      (then uses (rebuild-syntax #'first `(,rest)))))
+                  (next uses #'first
+                    (lambda (uses first)
+                      (next uses #'rest
+                        (lambda (uses rest)
+                          (then uses
+                            (rebuild-syntax stx
+                              `(,first . ,rest))))))))]
+              [_ (then uses stx)])))
+        (lambda (uses processed)
+          #`
+          (begin
+            ; We generate fake binding and usage sites just so the
+            ; Check Syntax binding arrows look good in DrRacket.
+            (let ()
+              (define-syntax (sample stx) #'(void))
+              #,@uses
+              (void))
+            #,processed)))]))
 
 
 
@@ -146,10 +160,10 @@
       (read-syntax/recursive src in)
       (read/recursive in)))
   (define (read-skipping-comments)
-    (define result (read-as-we-should))
-    (until (not (special-comment? result))
-      (set! result (read-as-we-should)))
-    result)
+    (let ([result (read-as-we-should)])
+      (if (special-comment? result)
+        (read-skipping-comments)
+        result)))
   (define (skip-whitespace)
     (regexp-match #px"^\\s*" in))
   (define (like-default char . originals)
@@ -345,15 +359,31 @@
   (define result (append (reverse rev-elems) improper-tail))
   (define-values (stop-line stop-col stop-pos)
     (port-next-location in))
-  (when should-read-syntax
-    (set! result
-      (datum->syntax #f result
-        (and line (vector src line col pos (- stop-pos pos)))))
-    (when (like-default next-char #\])
-      (set! result (syntax-property result 'paren-shape #\[)))
-    (when (like-default next-char #\})
-      (set! result (syntax-property result 'paren-shape #\{))))
-  result)
+  (define result-stx
+    (if should-read-syntax
+      (datum->syntax
+        #;ctxt #f
+        result
+        #;srcloc (and line (vector src line col pos (- stop-pos pos))))
+      result))
+  (cond
+    [(not should-read-syntax) result]
+    [else
+      (define result-stx
+        (datum->syntax
+          #;ctxt #f
+          result
+          
+          #;srcloc
+          (and line (vector src line col pos (- stop-pos pos)))
+          
+          ))
+      (cond
+        [ (like-default next-char #\])
+          (syntax-property result-stx 'paren-shape #\[)]
+        [ (like-default next-char #\})
+          (syntax-property result-stx 'paren-shape #\{)]
+        [else result-stx])]))
 
 
 ; Parendown's syntax highlighting recognizes the weak open paren as a
