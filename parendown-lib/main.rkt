@@ -25,7 +25,7 @@
   (for-syntax
     racket/base
     (only-in racket/match match)
-    (only-in syntax/parse id syntax-parse))
+    (only-in syntax/parse ~and id syntax-parse))
   (only-in racket/contract/base
     -> and/c any any/c case-> contract-out or/c)
   (only-in racket/undefined undefined)
@@ -68,7 +68,7 @@
     ; If the input appears to have already been processed by a
     ; surrounding `pd` form, that's fine. In that case `pd` behaves
     ; like an identity operation, having no effect.
-    [(_ (rest ...)) #'(rest ...)]
+    [(_ {~and rest (_ ...)}) #'rest]
     
     [ (_ sample:id rest ...)
       (define (add-to-syntax-property-list prop-name elem stx)
