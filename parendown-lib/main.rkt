@@ -6,7 +6,7 @@
 ; library rather than as a language extension. (The language extension
 ; is implemented in terms of this.)
 
-;   Copyright 2017-2018, 2021 The Lathe Authors
+;   Copyright 2017-2018, 2021, 2025 The Lathe Authors
 ;
 ;   Licensed under the Apache License, Version 2.0 (the "License");
 ;   you may not use this file except in compliance with the License.
@@ -55,6 +55,13 @@
 
 ; ===== Weak opening brackets from a syntax transformer ==============
 
+(define-for-syntax (rebuild-syntax basis-stx incomplete-stx)
+  (datum->syntax
+    #;ctxt basis-stx
+    incomplete-stx
+    #;srcloc basis-stx
+    #;prop basis-stx))
+
 (define-syntax (pd stx)
   (syntax-parse stx
     
@@ -69,7 +76,7 @@
           (cons elem (or (syntax-property stx prop-name) (list)))))
       (define uses (list))
       (define processed
-        (let loop ([stx #'(rest ...)])
+        (let loop ([stx (rebuild-syntax stx (syntax-e #'(rest ...)))])
           (syntax-parse stx
             [ (first . rest)
               (if
@@ -78,8 +85,9 @@
                   (bound-identifier=? #'sample #'first))
                 (begin
                   (set! uses (cons #'first uses))
-                  #`(#,(loop #'rest)))
-                #`(#,(loop #'first) . #,(loop #'rest)))]
+                  (rebuild-syntax #'first `(,(loop #'rest))))
+                (rebuild-syntax stx
+                  `(,(loop #'first) . ,(loop #'rest))))]
             [_ stx])))
       #`(begin
           ; We generate fake binding and usage sites just so the
