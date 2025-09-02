@@ -211,12 +211,12 @@ One of the hallmark syntax sugars/DSLs of Clojure is its suite of *threading mac
   string->immutable-string
   (foldl
     (lambda (name result) (hash-update result name add1 0))
-    (hash)))
+    (hashalw)))
 
 ; Without `~>>` but with Parendown (writing steps from last to first):
 (foldl
   (lambda (name result) (hash-update result name add1 0))
-  (hash)
+  (hashalw)
 #/string->immutable-string
 #/map user-name
 #/filter (lambda (user) #/not #/user-banned? user)
@@ -235,7 +235,7 @@ When a flat sequence of steps doesn't emerge on its own, or when we really want 
        [- (string->immutable-string -)]
        [- (foldl
             (lambda (name result) (hash-update result name add1 0))
-            (hash)
+            (hashalw)
             -)])
   -)
 ```
