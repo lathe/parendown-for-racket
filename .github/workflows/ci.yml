@@ -15,8 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        racket-variant: ["BC", "CS"]
-        racket-version: ["8.3", "stable", "current"]
+        racket-version: ["8.18", "stable", "current"]
         racket-catalogs-id: ["pkgs"]
         racket-catalogs: [""]
         include:
@@ -25,12 +24,11 @@ jobs:
           # versions. This is essentially our package-lock.json or
           # Cargo.lock information.
           #
-          - racket-variant: "CS"
-            racket-version: "8.3"
+          - racket-version: "8.18"
             racket-catalogs-id: "racksnaps"
             racket-catalogs: |
-              https://download.racket-lang.org/releases/8.3/catalog/,
-              https://racksnaps.defn.io/built-snapshots/2022/01/23/catalog/
+              https://download.racket-lang.org/releases/8.18/catalog/,
+              https://racksnaps.defn.io/built-snapshots/2025/08/23/catalog/
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -40,7 +38,6 @@ jobs:
         with:
           architecture: x64
           distribution: full
-          variant: ${{ matrix.racket-variant }}
           version: ${{ matrix.racket-version }}
           catalogs: ${{ matrix.racket-catalogs }}
           
@@ -88,7 +85,7 @@ jobs:
       # fetch a stale copy of the dependency from the Racket package
       # index.
       #
-      - name: Install `${{ matrix.package }}-lib` and its dependencies
+      - name: Install `${{ needs.vars.outputs.package }}-lib` and its dependencies
         run: raco pkg install --auto --no-docs --batch --link "./${{ needs.vars.outputs.package }}-lib/"
       - name: Install `${{ needs.vars.outputs.package }}-doc` and its dependencies
         run: raco pkg install --auto --no-docs --batch --link "./${{ needs.vars.outputs.package }}-doc/"
