@@ -25,10 +25,11 @@
   (for-syntax
     racket/base
     (only-in racket/match match)
-    (only-in syntax/parse ~and id syntax-parse))
+    (only-in syntax/parse ~and expr id syntax-parse this-syntax))
   (only-in racket/contract/base
     -> and/c any any/c case-> contract-out or/c)
   (only-in racket/undefined undefined)
+  (only-in syntax/parse/define define-syntax-parse-rule)
   (only-in syntax/readerr raise-read-error))
 
 (provide
@@ -159,7 +160,8 @@
     (body)
     (until-fn condition body)))
 
-(define-syntax-rule (until condition body ...)
+(define-syntax-parse-rule (until condition:expr body:expr ...)
+  #:when (autoptic-list-to? this-syntax this-syntax)
   (until-fn (lambda () condition) (lambda () body ...)))
 
 ; Racket's `peek-char` lets you skip a number of *bytes*, but not a
