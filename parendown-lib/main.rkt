@@ -24,8 +24,8 @@
 (require
   (for-syntax
     racket/base
-    (only-in racket/match match)
-    (only-in syntax/parse ~and expr id syntax-parse this-syntax))
+    (only-in syntax/parse ~and expr id syntax-parse this-syntax)
+    parendown/private/autoptic)
   (only-in racket/contract/base
     -> and/c any any/c case-> contract-out or/c)
   (only-in racket/undefined undefined)
@@ -62,33 +62,6 @@
     incomplete-stx
     #;srcloc basis-stx
     #;prop basis-stx))
-
-(define-for-syntax (scopes-empty? stx)
-  (bound-identifier=?
-    (datum->syntax stx 'x)
-    (datum->syntax #f 'x)
-    0))
-
-(define-for-syntax (scopes<=? a b)
-  (define b-scopes-fn
-    (make-syntax-delta-introducer (datum->syntax b 'x) #f 0))
-  (scopes-empty? (b-scopes-fn a 'remove)))
-
-(define-for-syntax (autoptic-to? surrounding-stx stx)
-  (scopes<=? surrounding-stx stx))
-
-(define-for-syntax (autoptic-list-to? surrounding-stx lst)
-  (if (syntax? lst)
-    (and (autoptic-to? surrounding-stx lst)
-      (autoptic-list-to? surrounding-stx (syntax-e lst)))
-    (match lst
-      [(cons elem lst) (autoptic-list-to? surrounding-stx lst)]
-      [(list) #t]
-      [_ #f])))
-
-(define-for-syntax (autoptic-lists-to? surrounding-stx lists)
-  (for/and ([lst (in-list lists)])
-    (autoptic-list-to? surrounding-stx lst)))
 
 (define-for-syntax (identifier-would-bind? binding-id potential-usage)
   (and
