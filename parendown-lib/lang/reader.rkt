@@ -5,7 +5,7 @@
 ; Parendown's weak opening paren functionality in the form of a
 ; language extension.
 
-;   Copyright 2017-2018, 2021 The Lathe Authors
+;   Copyright 2017, 2018, 2021, 2026 The Lathe Authors
 ;
 ;   Licensed under the Apache License, Version 2.0 (the "License");
 ;   you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@
   (only-in syntax/module-reader
     make-meta-reader
     lang-reader-module-paths)
-  (only-in parendown
+  (only-in parendown/reader
     parendown-color-lexer parendown-readtable-handler))
 
 (provide

@@ -25,6 +25,7 @@
   -> and/c any any/c)
 
 @(require #/for-label parendown)
+@(require #/for-label parendown/reader)
 
 
 @title{Parendown}
@@ -69,7 +70,7 @@ This acts as a non-symbol-terminating readtable extension, so symbols like @rack
 Symbols beginning with @tt{/}, such as the division operator @racket[/], may be more difficult to use with this extension in place. However, they can still be referred to using the alternative notations @tt{\/...} and @tt{|/...|}. In the case of division, that means writing @code{\/} or @code{|/|}.
 
 
-@section[#:tag "parendown-library"]{Parendown as a Library}
+@section[#:tag "parendown-library"]{Parendown as a Syntax Transformer}
 
 @defmodule[parendown #:link-target? #f]
 
@@ -139,6 +140,11 @@ There is also a @tt{parendown} module which lets Racket code use some features o
   
   An occurrence of a cons cell within the @tt{pd} call syntax must have a set of scopes that's equal to or a superset of the set of scopes on the @racket[(@#,tt{pd} _...)] call itself. This behavior ensures that a @tt{pd} call that occurs within a macro's expansion template can have everyday Racket expressions interpolated into it by the template, without misinterpreting those expressions' syntactic structure.
 }
+
+
+@section[#:tag "parendown/reader"]{Parendown as a Readtable Handler}
+
+@defmodule[parendown/reader]
 
 @defproc*[(
   [(parendown-readtable-handler [name char?] [in input-port?]) any/c]
