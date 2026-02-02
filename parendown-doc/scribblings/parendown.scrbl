@@ -5,7 +5,7 @@
 @; Weak opening paren functionality in the form of a language
 @; extension and a library.
 
-@;   Copyright 2018, 2021, 2025 The Lathe Authors
+@;   Copyright 2018, 2021, 2025, 2026 The Lathe Authors
 @;
 @;   Licensed under the Apache License, Version 2.0 (the "License");
 @;   you may not use this file except in compliance with the License.
