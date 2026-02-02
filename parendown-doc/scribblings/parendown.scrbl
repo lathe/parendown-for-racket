@@ -21,7 +21,8 @@
 
 
 @(require #/for-label racket/base)
-@(require #/for-label #/only-in racket/contract/base and/c any any/c)
+@(require #/for-label #/only-in racket/contract/base
+  -> and/c any any/c)
 
 @(require #/for-label parendown)
 
